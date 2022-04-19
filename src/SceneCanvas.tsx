@@ -5,15 +5,23 @@ export default function SceneCanvas() {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (mountRef.current) {
-      const renderer = main(mountRef);
-
-      return () => {
-        if (mountRef.current && renderer)
-          mountRef.current?.removeChild(renderer.domElement);
-      };
+    if (!mountRef.current) {
+      return;
     }
+
+    const renderer = main(mountRef);
+
+    if (!renderer) {
+      return;
+    }
+
+    renderer.domElement.id = "c";
+
+    return () => {
+      if (mountRef.current && renderer)
+        mountRef.current?.removeChild(renderer.domElement);
+    };
   }, []);
 
-  return <div ref={mountRef} />;
+  return <div ref={mountRef} style={{ width: "70%", margin: "0 auto" }} />;
 }
