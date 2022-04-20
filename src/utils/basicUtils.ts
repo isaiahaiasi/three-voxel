@@ -18,7 +18,10 @@ export function createRange(start: number, end: number, step = 1) {
   };
 }
 
-export function deepLoop(ranges: Iterable<number>[], fn: any) {
+export function deepLoop(
+  ranges: Iterable<number>[],
+  fn: (...is:number[]) => void
+) {
   function recursiveLoop(
     values: number[],
     ranges: Iterable<number>[],
