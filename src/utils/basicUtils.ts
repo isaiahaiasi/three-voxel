@@ -18,6 +18,10 @@ export function createRange(start: number, end: number, step = 1) {
   };
 }
 
+export function createSimpleRanges(...maxes: number[]) {
+  return maxes.map(max => createRange(0, max));
+}
+
 export function deepLoop(
   ranges: Iterable<number>[],
   fn: (...is:number[]) => void
@@ -46,4 +50,15 @@ export function deepLoop(
       recursiveLoop([i], ranges.slice(1), fn);
     });
   }
+}
+
+// assuming all voxels in a cube are stored in a 1D array,
+// get the location of a voxel in that array based on (x, y, z)
+// (for some reason, the example I'm referencing organizes by y-z-x...)
+export function getOffsetFromPosition(x: number, y: number, z: number, length: number) {
+  return y * length * length + z * length + x;
+}
+
+export function getRangesFromMax(...maxes: number[]) {
+  return maxes.map(max => createRange(0, max));
 }

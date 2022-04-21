@@ -2,56 +2,18 @@ import { RefObject } from "react";
 import * as THREE from "three";
 import { Camera, PerspectiveCamera, Renderer, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { getWorld } from "./worldGenEx";
 
-// cautionary ex
-{
-  const cellSize = 128;
+import Stats from 'stats.js';
 
-  function getDataArray() {
-    const cell = new Uint8Array(cellSize * cellSize * cellSize);
-
-    for (let y = 0; y < cellSize; y++) {
-      for (let z = 0; z < cellSize; z++) {
-        for (let x = 0; x < cellSize; x++) {
-          const height =
-            Math.sin((x / cellSize) * Math.PI * 4) *
-              Math.sin((z / cellSize) * Math.PI * 6) *
-              20 +
-            cellSize / 2;
-          if (height > y && height < y + 1) {
-            const offset = y * cellSize * cellSize + z * cellSize + x;
-            cell[offset] = 1;
-          }
-        }
-      }
-    }
-
-    return cell;
-  }
-
-  function getDataMesh(data: Uint8Array, scene: any) {
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshPhongMaterial({ color: "green" });
-
-    for (let y = 0; y < cellSize; ++y) {
-      for (let z = 0; z < cellSize; ++z) {
-        for (let x = 0; x < cellSize; ++x) {
-          const offset = y * cellSize * cellSize + z * cellSize + x;
-          const block = data[offset];
-          const mesh = new THREE.Mesh(geometry, material);
-          mesh.position.set(x, y, z);
-          scene.add(mesh);
-        }
-      }
-    }
-  }
-}
+const CHUNK_SIZE = 128;
+const ASPECT = 1;
 
 function createCamera() {
   const fov = 75;
-  const aspect = 2;
+  const aspect = ASPECT;
   const near = 0.1;
-  const far = 5;
+  const far = 600;
   return new THREE.PerspectiveCamera(fov, aspect, near, far);
 }
 
@@ -110,41 +72,42 @@ function main(mountRef: RefObject<HTMLElement>) {
     return;
   }
 
+  // init stats
+  const stats = new Stats();
+  stats.showPanel( 1 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+  document.body.appendChild( stats.dom );
+
   const renderer = new THREE.WebGLRenderer();
   mountRef.current.appendChild(renderer.domElement);
 
   const camera = createCamera();
-  camera.position.z = 2.5;
+  camera.position.set(-CHUNK_SIZE * .3, CHUNK_SIZE * .8, -CHUNK_SIZE * .3);
 
   // set up controls
-  // ok but WHY does
   const controls = initControls(camera, renderer);
   controls.addEventListener("change", requestRenderIfNotRequested);
   window.addEventListener("resize", requestRenderIfNotRequested);
 
   const scene = new THREE.Scene();
 
-  const cubes = [
-    createCube(1, getRandomColor(), new Vector3(-2, 0, 0)),
-    createCube(1, getRandomColor(), new Vector3(0, 0, 0)),
-    createCube(1, getRandomColor(), new Vector3(2, 0, 0)),
-  ];
+  scene.add(getWorld(CHUNK_SIZE));
 
   const dirLight = createDirectionalLight(new Vector3(-1, 2, 4));
   const ambLight = new THREE.AmbientLight(0x404040);
 
-  cubes.forEach((cube) => scene.add(cube));
   scene.add(dirLight);
   scene.add(ambLight);
 
   let renderRequested = false;
 
   function render() {
+    stats.begin();
     renderRequested = false;
     handleCanvasScaling(camera, renderer);
     controls.update();
     renderFrameActions.forEach((action) => action());
     renderer.render(scene, camera);
+    stats.end();
   }
 
   render();

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { createRange, deepLoop } from "../utils/basicUtils";
+import { createRange, deepLoop, getOffsetFromPosition } from "../utils/basicUtils";
 
 // cautionary ex
 export const CHUNK_SIZE = 256;
@@ -17,10 +17,7 @@ export function generateHillsData() {
     const height = (Math.sin(x / CHUNK_SIZE * Math.PI * 4) + Math.sin(z / CHUNK_SIZE * Math.PI * 6)) * 20 + CHUNK_SIZE / 2;
 
     if (height > y && height < y + 1) {
-      const offset = y * CHUNK_SIZE * CHUNK_SIZE +
-                      z * CHUNK_SIZE +
-                      x;
-
+      const offset = getOffsetFromPosition(x, y, z, CHUNK_SIZE);
       chunk[offset] = 1;
     }
   });
@@ -37,10 +34,7 @@ function generateHillsDataRegular() {
         const height = (Math.sin(x / CHUNK_SIZE * Math.PI * 4) + Math.sin(z / CHUNK_SIZE * Math.PI * 6)) * 20 + CHUNK_SIZE / 2;
 
         if (height > y && height < y + 1) {
-          const offset = y * CHUNK_SIZE * CHUNK_SIZE +
-                         z * CHUNK_SIZE +
-                         x;
-
+          const offset = getOffsetFromPosition(x, y, z, CHUNK_SIZE);
           chunk[offset] = 1;
         }
       }
@@ -56,7 +50,7 @@ export function getDataMesh(data: Uint8Array, scene: any) {
   const material = new THREE.MeshPhongMaterial({ color: "green" });
 
   deepLoop(yzxRanges, (...[y, z, x]) => {
-    const offset = y * CHUNK_SIZE * CHUNK_SIZE + z * CHUNK_SIZE + x;
+    const offset = getOffsetFromPosition(x, y, z, CHUNK_SIZE);
     const block = data[offset];
 
     if (block) {

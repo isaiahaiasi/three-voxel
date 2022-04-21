@@ -23,5 +23,5 @@ export default function SceneCanvas() {
     };
   }, []);
 
-  return <div ref={mountRef} style={{ width: "70%", margin: "0 auto" }} />;
+  return <div ref={mountRef}/>;
 }
