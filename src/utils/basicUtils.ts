@@ -62,3 +62,7 @@ export function getOffsetFromPosition(x: number, y: number, z: number, length: n
 export function getRangesFromMax(...maxes: number[]) {
   return maxes.map(max => createRange(0, max));
 }
+
+export function randInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min) + min);
+}

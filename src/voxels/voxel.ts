@@ -1,8 +1,12 @@
+// https://threejs.org/manual/#en/voxel-geometry
+
 import { RefObject } from "react";
 import * as THREE from "three";
 import { Camera, PerspectiveCamera, Renderer, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { getWorld } from "./worldGenEx";
+
+import textureAtlas from "./assets/flourish-cc-by-nc-sa.png";
 
 import Stats from 'stats.js';
 
@@ -25,18 +29,6 @@ function createDirectionalLight(pos: Vector3) {
   light.position.set(...pos.toArray());
 
   return light;
-}
-
-const renderFrameActions: any[] = [];
-
-function createCube(size: number, color: number, position: Vector3) {
-  const geo = new THREE.BoxGeometry(size, size, size);
-  const mat = new THREE.MeshPhongMaterial({ color });
-  const cube = new THREE.Mesh(geo, mat);
-
-  cube.position.set(...position.toArray());
-
-  return cube;
 }
 
 function handleCanvasScaling(camera: PerspectiveCamera, renderer: Renderer) {
@@ -67,6 +59,14 @@ function initControls(camera: Camera, renderer: Renderer) {
   return controls;
 }
 
+function loadTexture(path: string, onLoad: any) {
+  const loader = new THREE.TextureLoader();
+  const texture = loader.load(path, onLoad);
+  texture.magFilter = THREE.NearestFilter;
+  texture.minFilter = THREE.NearestFilter;
+  return texture;
+}
+
 function main(mountRef: RefObject<HTMLElement>) {
   if (!mountRef?.current) {
     return;
@@ -88,9 +88,11 @@ function main(mountRef: RefObject<HTMLElement>) {
   controls.addEventListener("change", requestRenderIfNotRequested);
   window.addEventListener("resize", requestRenderIfNotRequested);
 
+  const tex = loadTexture(textureAtlas, render);
+
   const scene = new THREE.Scene();
 
-  scene.add(getWorld(CHUNK_SIZE));
+  scene.add(getWorld(CHUNK_SIZE, tex));
 
   const dirLight = createDirectionalLight(new Vector3(-1, 2, 4));
   const ambLight = new THREE.AmbientLight(0x404040);
@@ -105,7 +107,6 @@ function main(mountRef: RefObject<HTMLElement>) {
     renderRequested = false;
     handleCanvasScaling(camera, renderer);
     controls.update();
-    renderFrameActions.forEach((action) => action());
     renderer.render(scene, camera);
     stats.end();
   }
