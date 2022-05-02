@@ -29,7 +29,7 @@ export default class VoxelWorld {
   private tileTextureWidth: number;
   private tileTextureHeight: number;
   private chunkSliceSize: number;
-  private chunk: Uint8Array;
+  private chunks: Map<string, Uint8Array>;
 
   constructor({
     chunkSize,
@@ -43,20 +43,27 @@ export default class VoxelWorld {
     this.tileTextureHeight = tileTextureHeight;
   
     this.chunkSliceSize = chunkSize * chunkSize;
-    this.chunk = new Uint8Array(chunkSize * chunkSize * chunkSize);
+    this.chunks = new Map();
   }
 
-  getChunkForVoxel(x:number, y:number, z:number) {
+  computeChunkId(x: number, y: number, z: number) {
     const { chunkSize } = this;
     const chunkX = Math.floor(x / chunkSize);
     const chunkY = Math.floor(y / chunkSize);
     const chunkZ = Math.floor(z / chunkSize);
+    return `${chunkX},${chunkY},${chunkZ}`;
+  }
 
-    if (chunkX !== 0 || chunkY !== 0 || chunkZ !== 0) {
-      return null;
-    } else {
-      return this.chunk;
-    }
+  computeVoxelOffset(x: number, y: number, z: number) {
+    const { chunkSize } = this;
+    const voxelX = THREE.MathUtils.euclideanModulo(x, chunkSize) | 0;
+    const voxelY = THREE.MathUtils.euclideanModulo(y, chunkSize) | 0;
+    const voxelZ = THREE.MathUtils.euclideanModulo(z, chunkSize) | 0;
+    return getOffsetFromPosition(voxelX, voxelY, voxelZ, chunkSize);
+  }
+
+  getChunkForVoxel(x:number, y:number, z:number) {
+    return this.chunks.get(this.computeChunkId(x, y, z));
   }
 
   getVoxel(x: number, y: number, z: number) {
@@ -74,22 +81,31 @@ export default class VoxelWorld {
     const voxelOffset = getOffsetFromPosition(voxelX, voxelY, voxelZ, chunkSize);
 
     return chunk[voxelOffset];
-  };
+  }
 
   setVoxel(x: number, y: number, z: number, v: number) {
-    const chunk = this.getChunkForVoxel(x, y, z);
+    let chunk = this.getChunkForVoxel(x, y, z);
 
-    if (!chunk) {
-      return; // TODO: add new chunk?
+    if (chunk === undefined) {
+      chunk = this.addChunkForVoxel(x, y, z);
     }
 
-    const { chunkSize } = this;
-    const voxelX = THREE.MathUtils.euclideanModulo(x, chunkSize) | 0;
-    const voxelY = THREE.MathUtils.euclideanModulo(y, chunkSize) | 0;
-    const voxelZ = THREE.MathUtils.euclideanModulo(z, chunkSize) | 0;
-    const voxelOffset = getOffsetFromPosition(voxelX, voxelY, voxelZ, chunkSize);
+    const voxelOffset = this.computeVoxelOffset(x, y, z);
 
     chunk[voxelOffset] = v;
+  }
+
+  addChunkForVoxel(x: number, y: number, z: number) {
+    const chunkId = this.computeChunkId(x, y, z);
+    let chunk = this.chunks.get(chunkId);
+    
+    if (!chunk) {
+      const { chunkSize } = this;
+      chunk = new Uint8Array(chunkSize * chunkSize * chunkSize);
+      this.chunks.set(chunkId, chunk);
+    }
+
+    return chunk;
   }
 
   generateGeometryDataForChunk(chunkPos: Vector3) {
