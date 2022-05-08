@@ -10,8 +10,61 @@ import textureAtlas from "./assets/flourish-cc-by-nc-sa.png";
 
 import Stats from 'stats.js';
 
-const CHUNK_SIZE = 128;
+const CHUNK_SIZE = 32;
 const ASPECT = 1;
+
+function createVoxelSelectorUI() {
+  let currentId: string | undefined;
+  let currentVoxel = 0;
+
+  const canvasID = "canvas-ui";
+
+  if (document.querySelector(`#${canvasID}`)) {
+    return;
+  }
+
+  const ui = document.createElement("div");
+  ui.id = canvasID;
+  const row1 = document.createElement("div");
+  row1.classList.add("canvas-ui__tiles");
+  const row2 = document.createElement("div");
+  row2.classList.add("canvas-ui__tiles");
+
+  for (let i = 1; i <= 16; i++) {
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "voxel";
+    radio.id = "voxel" + i;
+    radio.value = "" + i;
+
+    radio.addEventListener('click', () => {
+      if (radio.id === currentId) {
+        radio.checked = false;
+        currentId = undefined;
+        currentVoxel = 0;
+        console.log("uncheck")
+      } else {
+        currentId = radio.id;
+        currentVoxel = i;
+        // radio.checked = true;
+        console.log("check", radio);
+      }
+    })
+
+    const radioLabel = document.createElement("label");
+    radioLabel.setAttribute("for", "voxel" + i);
+    radioLabel.setAttribute("style", `background-position: -${(i - 1) * 100}% -0%`)
+
+    // add to either row1 or row2 depending on i
+    const inputParent = i <= 8 ? row1 : row2;
+    inputParent.appendChild(radio);
+    inputParent.appendChild(radioLabel);
+  }
+
+  ui.appendChild(row1);
+  ui.appendChild(row2);
+  return ui;
+}
 
 function createCamera() {
   const fov = 75;
@@ -45,10 +98,6 @@ function handleCanvasScaling(camera: PerspectiveCamera, renderer: Renderer) {
   }
 }
 
-function getRandomColor() {
-  return Math.ceil(Math.random() * 255 * 255 * 255);
-}
-
 function initControls(camera: Camera, renderer: Renderer) {
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 0, 0);
@@ -67,21 +116,44 @@ function loadTexture(path: string, onLoad: any) {
   return texture;
 }
 
+function initStats() {
+  const statsDomID = "three-canvas-stats";
+  
+  if (document.querySelector(`#${statsDomID}`)) {
+    return;
+  }
+
+  const stats = new Stats();
+  stats.showPanel( 1 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+  stats.dom.id = statsDomID;
+  document.body.appendChild( stats.dom );
+
+  return stats;
+}
+
+
 function main(mountRef: RefObject<HTMLElement>) {
   if (!mountRef?.current) {
     return;
   }
 
-  // init stats
-  const stats = new Stats();
-  stats.showPanel( 1 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-  document.body.appendChild( stats.dom );
+  const mountGroup = document.createElement("div");
+
+  const stats = initStats();
 
   const renderer = new THREE.WebGLRenderer();
-  mountRef.current.appendChild(renderer.domElement);
+
+  mountGroup.appendChild(renderer.domElement);
+  mountRef.current.appendChild(mountGroup);
+
+  // add UI as *sibling* of canvas
+  const selectorUI = createVoxelSelectorUI();
+  if (selectorUI) {
+    mountRef.current.appendChild(selectorUI);
+  }
 
   const camera = createCamera();
-  camera.position.set(-CHUNK_SIZE * .3, CHUNK_SIZE * .8, -CHUNK_SIZE * .3);
+  camera.position.set(-CHUNK_SIZE * 1, CHUNK_SIZE * 1, -CHUNK_SIZE * 0.8);
 
   // set up controls
   const controls = initControls(camera, renderer);
@@ -103,12 +175,12 @@ function main(mountRef: RefObject<HTMLElement>) {
   let renderRequested = false;
 
   function render() {
-    stats.begin();
+    stats?.begin();
     renderRequested = false;
     handleCanvasScaling(camera, renderer);
     controls.update();
     renderer.render(scene, camera);
-    stats.end();
+    stats?.end();
   }
 
   render();
@@ -120,7 +192,7 @@ function main(mountRef: RefObject<HTMLElement>) {
     }
   }
 
-  return renderer;
+  return mountGroup;
 }
 
 export default main;
