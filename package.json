@@ -1,5 +1,6 @@
 {
-  "name": "test-vite-project",
+  "name": "three-voxel",
+  "description": "Mini-project making a Minecraft-inspired Voxel toy using TypeScript, Vite, React, and Three.JS.",
   "private": true,
   "version": "0.0.0",
   "scripts": {
