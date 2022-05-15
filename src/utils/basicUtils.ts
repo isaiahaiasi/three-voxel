@@ -1,3 +1,9 @@
+export function zip(...arrays: any[][]) {
+  return arrays[0].map((_, i) => {
+    return arrays.map(v => v[i]);
+  })
+}
+
 export function createRange(start: number, end: number, step = 1) {
   return {
     [Symbol.iterator]() {

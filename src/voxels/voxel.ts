@@ -6,29 +6,42 @@ import { Camera, PerspectiveCamera, Renderer, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { getWorld } from "./worldGenEx";
 
-import textureAtlas from "./assets/flourish-cc-by-nc-sa.png";
-
 import Stats from 'stats.js';
+import createVoxelPlacer from "./voxelPlacer";
 
 const CHUNK_SIZE = 32;
 const ASPECT = 1;
 
-function createVoxelSelectorUI() {
+interface UIState {
+  currentVoxel: number;
+}
+
+function createVoxelSelectorUI(uiState: UIState) {
   let currentId: string | undefined;
-  let currentVoxel = 0;
 
-  const canvasID = "canvas-ui";
+  const uiDOMID = "canvas-ui";
 
-  if (document.querySelector(`#${canvasID}`)) {
-    return;
+  const existingSelectorUI = document.querySelector(`#${uiDOMID}`);
+  if (existingSelectorUI) {
+    if (existingSelectorUI.parentNode) {
+      existingSelectorUI.parentNode.removeChild(existingSelectorUI);
+    } else {
+      console.error("Could not remove existing selector UI!");
+      return;
+    }
   }
 
   const ui = document.createElement("div");
-  ui.id = canvasID;
+  ui.id = uiDOMID;
   const row1 = document.createElement("div");
   row1.classList.add("canvas-ui__tiles");
   const row2 = document.createElement("div");
   row2.classList.add("canvas-ui__tiles");
+
+  const uiStateReader = document.createElement('p');
+  uiStateReader.setAttribute("style", "position: absolute; z-index: 30;");
+  uiStateReader.textContent = "" + uiState.currentVoxel;
+  ui.appendChild(uiStateReader);
 
   for (let i = 1; i <= 16; i++) {
     const radio = document.createElement("input");
@@ -41,13 +54,13 @@ function createVoxelSelectorUI() {
       if (radio.id === currentId) {
         radio.checked = false;
         currentId = undefined;
-        currentVoxel = 0;
+        uiState.currentVoxel = 0;
         console.log("uncheck")
       } else {
         currentId = radio.id;
-        currentVoxel = i;
-        // radio.checked = true;
-        console.log("check", radio);
+        uiState.currentVoxel = i;
+        uiStateReader.textContent = "" + uiState.currentVoxel;
+        console.log("check", uiState.currentVoxel);
       }
     })
 
@@ -71,7 +84,9 @@ function createCamera() {
   const aspect = ASPECT;
   const near = 0.1;
   const far = 600;
-  return new THREE.PerspectiveCamera(fov, aspect, near, far);
+  const cam = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  cam.position.set(-CHUNK_SIZE * 1, CHUNK_SIZE * 1, -CHUNK_SIZE * 0.8);
+  return cam;
 }
 
 function createDirectionalLight(pos: Vector3) {
@@ -98,24 +113,6 @@ function handleCanvasScaling(camera: PerspectiveCamera, renderer: Renderer) {
   }
 }
 
-function initControls(camera: Camera, renderer: Renderer) {
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.target.set(0, 0, 0);
-  controls.enableDamping = true;
-
-  controls.update();
-
-  return controls;
-}
-
-function loadTexture(path: string, onLoad: any) {
-  const loader = new THREE.TextureLoader();
-  const texture = loader.load(path, onLoad);
-  texture.magFilter = THREE.NearestFilter;
-  texture.minFilter = THREE.NearestFilter;
-  return texture;
-}
-
 function initStats() {
   const statsDomID = "three-canvas-stats";
   
@@ -131,46 +128,131 @@ function initStats() {
   return stats;
 }
 
+function initControls(
+  renderer:THREE.Renderer,
+  camera:THREE.Camera,
+  onChange:()=>void
+) {
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 0, 0);
+  controls.enableDamping = true;
 
-function main(mountRef: RefObject<HTMLElement>) {
+  controls.update();
+  controls.addEventListener("change", onChange);
+  return controls;
+}
+
+
+// function main(mountRef: RefObject<HTMLElement>) {
+//   if (!mountRef?.current) {
+//     return;
+//   }
+
+//   const mountGroup = document.createElement("div");
+
+//   const stats = initStats();
+
+//   const renderer = new THREE.WebGLRenderer();
+
+//   mountGroup.appendChild(renderer.domElement);
+//   mountRef.current.appendChild(mountGroup);
+
+//   // add UI as *sibling* of canvas
+//   const selectorUI = createVoxelSelectorUI();
+//   if (selectorUI) {
+//     mountRef.current.appendChild(selectorUI);
+//   }
+
+//   const camera = createCamera();
+//   camera.position.set(-CHUNK_SIZE * 1, CHUNK_SIZE * 1, -CHUNK_SIZE * 0.8);
+
+//   // set up controls
+//   const controls = initControls(camera, renderer);
+//   controls.addEventListener("change", requestRenderIfNotRequested);
+//   window.addEventListener("resize", requestRenderIfNotRequested);
+
+//   const tex = loadTexture(textureAtlas, render);
+
+//   const scene = new THREE.Scene();
+
+//   scene.add(getWorld(CHUNK_SIZE, tex));
+
+//   const dirLight = createDirectionalLight(new Vector3(-1, 2, 4));
+//   const ambLight = new THREE.AmbientLight(0x404040);
+
+//   scene.add(dirLight);
+//   scene.add(ambLight);
+
+//   let renderRequested = false;
+
+//   function render() {
+//     stats?.begin();
+//     renderRequested = false;
+//     handleCanvasScaling(camera, renderer);
+//     controls.update();
+//     renderer.render(scene, camera);
+//     stats?.end();
+//   }
+
+//   render();
+
+//   function requestRenderIfNotRequested() {
+//     if (!renderRequested) {
+//       renderRequested = true;
+//       requestAnimationFrame(render);
+//     }
+//   }
+
+//   return mountGroup;
+// }
+
+// TODO: figure out how to organize stuff properly...
+
+function createVoxelApplication(mountRef:RefObject<HTMLElement>) {
   if (!mountRef?.current) {
     return;
   }
 
-  const mountGroup = document.createElement("div");
-
-  const stats = initStats();
+  // TODO: replace with resizeObserver
+  window.addEventListener("resize", requestRenderIfNotRequested);
 
   const renderer = new THREE.WebGLRenderer();
 
+  const stats = initStats();
+  const camera = createCamera();
+  const controls = initControls(renderer, camera, requestRenderIfNotRequested);
+  const scene = new THREE.Scene();
+
+  const mountGroup = document.createElement("div");
   mountGroup.appendChild(renderer.domElement);
   mountRef.current.appendChild(mountGroup);
 
-  // add UI as *sibling* of canvas
-  const selectorUI = createVoxelSelectorUI();
+  const uiState = {
+    currentVoxel: 0
+  };
+
+  const selectorUI = createVoxelSelectorUI(uiState);
+
   if (selectorUI) {
     mountRef.current.appendChild(selectorUI);
   }
 
-  const camera = createCamera();
-  camera.position.set(-CHUNK_SIZE * 1, CHUNK_SIZE * 1, -CHUNK_SIZE * 0.8);
+  function initScene() {
+    const world = getWorld(CHUNK_SIZE, requestRenderIfNotRequested, addMeshtoScene);
 
-  // set up controls
-  const controls = initControls(camera, renderer);
-  controls.addEventListener("change", requestRenderIfNotRequested);
-  window.addEventListener("resize", requestRenderIfNotRequested);
+    createVoxelPlacer({
+      canvas: renderer.domElement,
+      camera,
+      world,
+      uiState
+    });
 
-  const tex = loadTexture(textureAtlas, render);
-
-  const scene = new THREE.Scene();
-
-  scene.add(getWorld(CHUNK_SIZE, tex));
-
-  const dirLight = createDirectionalLight(new Vector3(-1, 2, 4));
-  const ambLight = new THREE.AmbientLight(0x404040);
-
-  scene.add(dirLight);
-  scene.add(ambLight);
+    // lighting
+    const dirLight = createDirectionalLight(new Vector3(-1, 2, 4));
+    const ambLight = new THREE.AmbientLight(0x404040);
+    scene.add(dirLight);
+    scene.add(ambLight);
+  }
 
   let renderRequested = false;
 
@@ -183,8 +265,6 @@ function main(mountRef: RefObject<HTMLElement>) {
     stats?.end();
   }
 
-  render();
-
   function requestRenderIfNotRequested() {
     if (!renderRequested) {
       renderRequested = true;
@@ -192,7 +272,15 @@ function main(mountRef: RefObject<HTMLElement>) {
     }
   }
 
-  return mountGroup;
+  function addMeshtoScene(mesh:THREE.Mesh) {
+    scene.add(mesh);
+    requestRenderIfNotRequested();
+  }
+
+  initScene();
+  render();
+
+  return {mountGroup};
 }
 
-export default main;
+export default createVoxelApplication;

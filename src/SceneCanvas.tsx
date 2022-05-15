@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import main from "./voxels/voxel";
+import createVoxelApplication from "./voxels/voxel";
 
 export default function SceneCanvas() {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -13,7 +13,7 @@ export default function SceneCanvas() {
 
     mountRef.current.id = "canvas-grp-mountref-target";
 
-    const mountGroup = main(mountRef);
+    const mountGroup = createVoxelApplication(mountRef)?.mountGroup;
 
     if (!mountGroup) {
       return;
