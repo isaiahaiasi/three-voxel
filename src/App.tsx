@@ -1,10 +1,10 @@
 import "./App.css";
-import SceneCanvas from "./SceneCanvas";
+import VoxelCanvas from "./VoxelCanvas";
 
 function App() {
   return (
     <div className="App">
-      <SceneCanvas />
+      <VoxelCanvas/>
     </div>
   );
 }

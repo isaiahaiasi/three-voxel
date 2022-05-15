@@ -10,9 +10,9 @@ export const vec3NeighborOffsets = {
   front: [0, 0, 1],
 }
 
-export function loadTexture(path: string, onLoad: any) {
+export function loadTexture(path: string, onLoad?: any) {
   const loader = new THREE.TextureLoader();
-  const texture = loader.load(path, onLoad);
+  const texture = onLoad ? loader.load(path, onLoad) : loader.load(path);
   texture.magFilter = THREE.NearestFilter;
   texture.minFilter = THREE.NearestFilter;
   return texture;

@@ -2,7 +2,7 @@
 
 import { RefObject } from "react";
 import * as THREE from "three";
-import { Camera, PerspectiveCamera, Renderer, Vector3 } from "three";
+import { PerspectiveCamera, Renderer, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { getWorld } from "./worldGenEx";
 
@@ -142,69 +142,6 @@ function initControls(
   return controls;
 }
 
-
-// function main(mountRef: RefObject<HTMLElement>) {
-//   if (!mountRef?.current) {
-//     return;
-//   }
-
-//   const mountGroup = document.createElement("div");
-
-//   const stats = initStats();
-
-//   const renderer = new THREE.WebGLRenderer();
-
-//   mountGroup.appendChild(renderer.domElement);
-//   mountRef.current.appendChild(mountGroup);
-
-//   // add UI as *sibling* of canvas
-//   const selectorUI = createVoxelSelectorUI();
-//   if (selectorUI) {
-//     mountRef.current.appendChild(selectorUI);
-//   }
-
-//   const camera = createCamera();
-//   camera.position.set(-CHUNK_SIZE * 1, CHUNK_SIZE * 1, -CHUNK_SIZE * 0.8);
-
-//   // set up controls
-//   const controls = initControls(camera, renderer);
-//   controls.addEventListener("change", requestRenderIfNotRequested);
-//   window.addEventListener("resize", requestRenderIfNotRequested);
-
-//   const tex = loadTexture(textureAtlas, render);
-
-//   const scene = new THREE.Scene();
-
-//   scene.add(getWorld(CHUNK_SIZE, tex));
-
-//   const dirLight = createDirectionalLight(new Vector3(-1, 2, 4));
-//   const ambLight = new THREE.AmbientLight(0x404040);
-
-//   scene.add(dirLight);
-//   scene.add(ambLight);
-
-//   let renderRequested = false;
-
-//   function render() {
-//     stats?.begin();
-//     renderRequested = false;
-//     handleCanvasScaling(camera, renderer);
-//     controls.update();
-//     renderer.render(scene, camera);
-//     stats?.end();
-//   }
-
-//   render();
-
-//   function requestRenderIfNotRequested() {
-//     if (!renderRequested) {
-//       renderRequested = true;
-//       requestAnimationFrame(render);
-//     }
-//   }
-
-//   return mountGroup;
-// }
 
 // TODO: figure out how to organize stuff properly...
 
