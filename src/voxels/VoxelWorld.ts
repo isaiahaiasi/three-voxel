@@ -22,6 +22,7 @@ interface VoxelWorldOptions {
   tileTextureHeight: number;
   material: THREE.Material;
   addMeshToScene:(mesh: THREE.Mesh)=>void;
+  requestRender:()=>void;
 }
 
 interface RayData {
@@ -40,7 +41,10 @@ export default class VoxelWorld {
   private tileTextureWidth;
   private tileTextureHeight;
   private material;
-  private addMeshToScene; // TODO: fix these hideous dependencies!
+
+  // TODO: fix these hideous dependencies!
+  private addMeshToScene;
+  private requestRender;
 
   // contains data for what voxel is at each point in a chunk
   private chunks: Map<string, Uint8Array>;
@@ -54,6 +58,7 @@ export default class VoxelWorld {
     tileTextureHeight,
     material,
     addMeshToScene,
+    requestRender,
   }: VoxelWorldOptions) {
     this.chunkSize = chunkSize;
     this.tileSize = tileSize;
@@ -61,6 +66,7 @@ export default class VoxelWorld {
     this.tileTextureHeight = tileTextureHeight;
     this.material = material;
     this.addMeshToScene = addMeshToScene;
+    this.requestRender = requestRender;
   
     this.chunks = new Map();
     this.chunkMeshes = new Map();
@@ -160,10 +166,9 @@ export default class VoxelWorld {
       return v + intersection.normal[ndx] * (voxelId > 0 ? 0.5 : -0.5);
     }) as [number, number, number];
 
-    console.log(voxelId);
-
     this.setVoxel(...pos, voxelId);
     this.updateVoxelGeometry(...pos);
+    this.requestRender();
   }
 
   public initWorld() {
@@ -179,7 +184,9 @@ export default class VoxelWorld {
       (y, z, x) => {
         const height = (Math.sin(x / chunkSize * Math.PI * 2) + Math.sin(z / chunkSize * Math.PI * 3)) * (chunkSize / 6) + (chunkSize / 2);
         if (y < height) {
-          this.setVoxel(x, y, z, randInt(1, 17));
+          // const voxelId = randInt(0, 17);
+          const voxelId = 4;
+          this.setVoxel(x, y, z, voxelId);
         }
     });
   }
@@ -334,7 +341,7 @@ export default class VoxelWorld {
 
   private updateChunkGeometry(x:number, y:number, z:number) {
     const chunkId = this.getChunkId(x, y, z);
-    const chunkVector = new THREE.Vector3();
+    const chunkVector = new THREE.Vector3(...this.getChunkIndices(x, y, z));
     let mesh = this.chunkMeshes.get(chunkId);
 
     const geometry = mesh ? mesh.geometry : new THREE.BufferGeometry();

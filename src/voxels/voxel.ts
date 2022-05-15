@@ -238,7 +238,11 @@ function createVoxelApplication(mountRef:RefObject<HTMLElement>) {
   }
 
   function initScene() {
-    const world = getWorld(CHUNK_SIZE, requestRenderIfNotRequested, addMeshtoScene);
+    const world = getWorld(
+      CHUNK_SIZE,
+      requestRenderIfNotRequested,
+      (mesh) => scene.add(mesh)
+    );
 
     createVoxelPlacer({
       canvas: renderer.domElement,
@@ -270,11 +274,6 @@ function createVoxelApplication(mountRef:RefObject<HTMLElement>) {
       renderRequested = true;
       requestAnimationFrame(render);
     }
-  }
-
-  function addMeshtoScene(mesh:THREE.Mesh) {
-    scene.add(mesh);
-    requestRenderIfNotRequested();
   }
 
   initScene();
