@@ -6,11 +6,12 @@ import Controls from "./Controls";
 import * as THREE from 'three';
 
 export default function VoxelCanvas() {
-  return <Canvas>
+  return <Canvas id="c">
     <Controls/>
     <Lighting/>
 
     <primitive object={new THREE.AxesHelper(10)}/>
+
     <mesh>
       <sphereBufferGeometry />
       <VoxelMaterial textureAtlasPath={textureAtlas}/>
