@@ -31,7 +31,7 @@ export function getWorld(
     requestRender,
   });
 
-  world.initWorld();
+  world.init();
 
   return world;
 }
