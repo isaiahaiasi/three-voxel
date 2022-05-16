@@ -1,8 +1,8 @@
-import VoxelMaterial from "./VoxelMaterial";
+import VoxelMaterial from "./three-helper-components/VoxelMaterial";
 import VoxelWorld, { TileDimensions } from "./voxels/VoxelWorld";
 import textureAtlas from "./assets/flourish-cc-by-nc-sa.png";
 import VoxelPlacer from "./VoxelPlacer";
-import ActiveVoxelContext from "./ActiveVoxelContext";
+import ActiveVoxelContext from "./contexts/ActiveVoxelContext";
 import { useEffect, useState } from "react";
 import { Mesh } from "three";
 

@@ -1,8 +1,8 @@
 import { useRef } from "react";
-import ActiveVoxelContext from "./ActiveVoxelContext";
+import ActiveVoxelContext from "./contexts/ActiveVoxelContext";
 import "./App.css";
 import VoxelCanvas from "./VoxelCanvas";
-import VoxSelectorUI from "./voxels/VoxSelectorUI";
+import VoxSelectorUI from "./VoxSelectorUI";
 
 function App() {
   const selectedVoxelRef = useRef(0);

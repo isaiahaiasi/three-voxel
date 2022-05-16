@@ -1,7 +1,7 @@
 import { useThree } from "@react-three/fiber";
 import { useContext, useEffect, useRef } from "react";
 import { Vector3 } from "three";
-import ActiveVoxelContext from "./ActiveVoxelContext";
+import ActiveVoxelContext from "./contexts/ActiveVoxelContext";
 import VoxelWorld from "./voxels/VoxelWorld";
 
 interface VoxelPlacerProps {

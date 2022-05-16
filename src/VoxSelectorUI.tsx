@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import ActiveVoxelContext from "../ActiveVoxelContext";
-import { createRange } from "../utils/basicUtils"
+import ActiveVoxelContext from "./contexts/ActiveVoxelContext";
+import { createRange } from "./utils/basicUtils"
 
 function getVoxelInputElementId(voxelId: number) {
   return "voxel" + voxelId;

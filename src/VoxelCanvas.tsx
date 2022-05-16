@@ -1,10 +1,10 @@
 import { Canvas } from "@react-three/fiber";
-import Lighting from "./Lighting";
-import Controls from "./Controls";
+import Lighting from "./three-helper-components/Lighting";
+import Controls from "./three-helper-components/Controls";
 import * as THREE from 'three';
 import VoxelWorldRenderer from "./VoxelWorldRenderer";
 import { useContext } from "react";
-import ActiveVoxelContext from "./ActiveVoxelContext";
+import ActiveVoxelContext from "./contexts/ActiveVoxelContext";
 
 export default function VoxelCanvas() {
   const selectedVoxelRef = useContext(ActiveVoxelContext);
