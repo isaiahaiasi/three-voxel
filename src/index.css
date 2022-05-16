@@ -13,9 +13,12 @@ code {
     monospace;
 }
 
+#root, .App {
+  height: 100%;
+}
+
 #c {
-  width: 100%;
-  /* height: 100%; */
+  width: 50%;
   display: block;
 }
 
@@ -25,6 +28,7 @@ code {
   top: 10px;
   background: rgba(0, 0, 0, 0.8);
   padding: 5px;
+  z-index: 30;
 }
 
 #canvas-ui input[type=radio] {
@@ -34,7 +38,7 @@ code {
 }
 
 #canvas-ui input[type=radio] + label {
-  background-image: url('./voxels/assets/flourish-cc-by-nc-sa.png');
+  background-image: url('./assets/flourish-cc-by-nc-sa.png');
   background-size: 1600% 400%;
   image-rendering: pixelated;
   width: 64px;

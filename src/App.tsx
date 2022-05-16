@@ -1,11 +1,18 @@
+import { useRef } from "react";
+import ActiveVoxelContext from "./contexts/ActiveVoxelContext";
 import "./App.css";
-import SceneCanvas from "./SceneCanvas";
+import VoxelCanvas from "./VoxelCanvas";
+import VoxSelectorUI from "./VoxSelectorUI";
 
 function App() {
+  const selectedVoxelRef = useRef(0);
   return (
+    <ActiveVoxelContext.Provider value={selectedVoxelRef}>
     <div className="App">
-      <SceneCanvas />
+      <VoxSelectorUI/>
+      <VoxelCanvas/>
     </div>
+    </ActiveVoxelContext.Provider>
   );
 }
 

@@ -3,6 +3,12 @@ import { Vector3 } from "three";
 import { createRange, deepLoop, getOffsetFromPosition, getRangesFromMax, randInt } from "../utils/basicUtils";
 import { vec3NeighborOffsets } from "./voxelUtils";
 
+export interface TileDimensions {
+  size: number;
+  textureHeight: number;
+  textureWidth: number;
+}
+
 // size of each "chunk" to divide the world into
 // eg, a 32^3 cube of voxel data which is a subset of a larger "world"
 
@@ -17,12 +23,7 @@ interface Face {
 
 interface VoxelWorldOptions {
   chunkSize: number;
-  tileSize: number;
-  tileTextureWidth: number;
-  tileTextureHeight: number;
-  material: THREE.Material;
-  addMeshToScene:(mesh: THREE.Mesh)=>void;
-  requestRender:()=>void;
+  tileDimensions: TileDimensions;
 }
 
 interface RayData {
@@ -37,39 +38,28 @@ export default class VoxelWorld {
   static faces: Face[];
 
   private chunkSize;
-  private tileSize;
-  private tileTextureWidth;
-  private tileTextureHeight;
-  private material;
-
-  // TODO: fix these hideous dependencies!
-  private addMeshToScene;
-  private requestRender;
+  private tileDimensions;
 
   // contains data for what voxel is at each point in a chunk
   private chunks: Map<string, Uint8Array>;
   // TODO: Create a Chunk struct that contains both voxel data and mesh?
   private chunkMeshes: Map<string, THREE.Mesh>;
 
+  private onMeshUpdateFunctions: (() => void)[];
+
   constructor({
     chunkSize,
-    tileSize,
-    tileTextureWidth,
-    tileTextureHeight,
-    material,
-    addMeshToScene,
-    requestRender,
+    tileDimensions,
   }: VoxelWorldOptions) {
     this.chunkSize = chunkSize;
-    this.tileSize = tileSize;
-    this.tileTextureWidth = tileTextureWidth;
-    this.tileTextureHeight = tileTextureHeight;
-    this.material = material;
-    this.addMeshToScene = addMeshToScene;
-    this.requestRender = requestRender;
-  
+    this.tileDimensions = {...tileDimensions};
     this.chunks = new Map();
     this.chunkMeshes = new Map();
+    this.onMeshUpdateFunctions = [];
+  }
+
+  public onMeshUpdate(fn: () => void) {
+    this.onMeshUpdateFunctions.push(fn);
   }
 
   // from
@@ -168,13 +158,17 @@ export default class VoxelWorld {
 
     this.setVoxel(...pos, voxelId);
     this.updateVoxelGeometry(...pos);
-    this.requestRender();
+    // this.requestRender();
   }
 
-  public initWorld() {
+  public init() {
     const firstChunkIndices:THREE.Vector3Tuple = [0, 0, 0];
     this.generateDefaultWorldData();
     this.updateChunkGeometry(...firstChunkIndices);
+  }
+
+  public getMeshes() {
+    return [...this.chunkMeshes.values()];
   }
 
   private generateDefaultWorldData() {
@@ -184,8 +178,8 @@ export default class VoxelWorld {
       (y, z, x) => {
         const height = (Math.sin(x / chunkSize * Math.PI * 2) + Math.sin(z / chunkSize * Math.PI * 3)) * (chunkSize / 6) + (chunkSize / 2);
         if (y < height) {
-          // const voxelId = randInt(0, 17);
-          const voxelId = 4;
+          const voxelId = randInt(0, 17);
+          // const voxelId = 4;
           this.setVoxel(x, y, z, voxelId);
         }
     });
@@ -262,7 +256,13 @@ export default class VoxelWorld {
   }
 
   private generateGeometryDataForChunk(x: number, y: number, z: number) {
-    const { chunkSize, tileSize, tileTextureWidth, tileTextureHeight } = this;
+    const { chunkSize, tileDimensions } = this;
+    const {
+      size: tileSize,
+      textureHeight: tileTextureHeight,
+      textureWidth: tileTextureWidth 
+    } = tileDimensions;
+
     const positions: number[] = [];
     const normals: number[] = [];
     const uvs: number[] = [];
@@ -376,7 +376,8 @@ export default class VoxelWorld {
     geometry.computeBoundingSphere();
 
     if (!mesh) {
-      mesh = new THREE.Mesh(geometry, this.material);
+      console.log("creating new mesh...");
+      mesh = new THREE.Mesh(geometry);
       mesh.name = chunkId;
 
       // get world space position of chunk mesh (chunk indices * chunkSize)
@@ -384,9 +385,10 @@ export default class VoxelWorld {
       mesh.position.set(...meshPosition);
 
       this.chunkMeshes.set(chunkId, mesh);
-      this.addMeshToScene(mesh);
     }
 
+    console.log(`chunk ${chunkId} updated`);
+    this.onMeshUpdateFunctions.forEach(fn => fn());
   }
 }
 
