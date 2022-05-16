@@ -3,6 +3,8 @@ import VoxelWorld, { TileDimensions } from "./voxels/VoxelWorld";
 import textureAtlas from "./assets/flourish-cc-by-nc-sa.png";
 import VoxelPlacer from "./VoxelPlacer";
 import ActiveVoxelContext from "./ActiveVoxelContext";
+import { useEffect, useState } from "react";
+import { Mesh } from "three";
 
 interface VoxelWorldProps {
   chunkSize?: number;
@@ -19,11 +21,16 @@ export default function VoxelWorldRenderer({
   },
   selectedVoxelRef,
 }: VoxelWorldProps) {
-  const world = new VoxelWorld({
-    chunkSize,
-    tileDimensions
-  });
-  world.init();
+
+  const [world] = useState(new VoxelWorld({ chunkSize, tileDimensions}));
+  const [meshes, setMeshes] = useState<Mesh[]>(world.getMeshes());
+
+  useEffect(() => {
+    world.onMeshUpdate(() => {
+      setMeshes(world.getMeshes());
+    });
+    world.init();
+  }, []);
 
   // return:
   //   get the meshes from world
@@ -31,7 +38,7 @@ export default function VoxelWorldRenderer({
   return (
       <ActiveVoxelContext.Provider value={selectedVoxelRef}>
       <VoxelPlacer world={world}/>
-      {world.getMeshes().map(mesh => {
+      {meshes.map(mesh => {
         return (
           <primitive object={mesh} key={mesh.id}>
             <VoxelMaterial textureAtlasPath={textureAtlas}/>

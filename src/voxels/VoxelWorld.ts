@@ -45,6 +45,8 @@ export default class VoxelWorld {
   // TODO: Create a Chunk struct that contains both voxel data and mesh?
   private chunkMeshes: Map<string, THREE.Mesh>;
 
+  private onMeshUpdateFunctions: (() => void)[];
+
   constructor({
     chunkSize,
     tileDimensions,
@@ -53,6 +55,11 @@ export default class VoxelWorld {
     this.tileDimensions = {...tileDimensions};
     this.chunks = new Map();
     this.chunkMeshes = new Map();
+    this.onMeshUpdateFunctions = [];
+  }
+
+  public onMeshUpdate(fn: () => void) {
+    this.onMeshUpdateFunctions.push(fn);
   }
 
   // from
@@ -369,6 +376,7 @@ export default class VoxelWorld {
     geometry.computeBoundingSphere();
 
     if (!mesh) {
+      console.log("creating new mesh...");
       mesh = new THREE.Mesh(geometry);
       mesh.name = chunkId;
 
@@ -379,7 +387,8 @@ export default class VoxelWorld {
       this.chunkMeshes.set(chunkId, mesh);
     }
 
-    console.log("chunk mesh updated");
+    console.log(`chunk ${chunkId} updated`);
+    this.onMeshUpdateFunctions.forEach(fn => fn());
   }
 }
 
