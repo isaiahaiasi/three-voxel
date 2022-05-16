@@ -171,8 +171,8 @@ export default class VoxelWorld {
       (y, z, x) => {
         const height = (Math.sin(x / chunkSize * Math.PI * 2) + Math.sin(z / chunkSize * Math.PI * 3)) * (chunkSize / 6) + (chunkSize / 2);
         if (y < height) {
-          // const voxelId = randInt(0, 17);
-          const voxelId = 4;
+          const voxelId = randInt(0, 17);
+          // const voxelId = 4;
           this.setVoxel(x, y, z, voxelId);
         }
     });
@@ -377,9 +377,9 @@ export default class VoxelWorld {
       mesh.position.set(...meshPosition);
 
       this.chunkMeshes.set(chunkId, mesh);
-      // this.addMeshToScene(mesh);
     }
 
+    console.log("chunk mesh updated");
   }
 }
 
