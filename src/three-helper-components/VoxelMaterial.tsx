@@ -11,7 +11,7 @@ interface VoxelMaterialProps {
 export default function VoxelMaterial({textureAtlasPath}:VoxelMaterialProps) {
   const colorMap = useLoader(THREE.TextureLoader, textureAtlasPath);
   colorMap.magFilter = THREE.NearestFilter;
-  colorMap.minFilter = THREE.NearestFilter;
+  // colorMap.minFilter = THREE.NearestFilter;
 
   return <meshLambertMaterial
     map={colorMap}

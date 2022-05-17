@@ -16,6 +16,8 @@ export default function VoxelCanvas() {
 
   return <Canvas id="c">
     <color attach="background" args={["black"]}/>
+    <fog attach="fog" color={0x101040} near={1} far={125}/>
+
     <Controls/>
     <Lighting/>
 

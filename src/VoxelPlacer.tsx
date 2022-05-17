@@ -17,7 +17,10 @@ export default function VoxelPlacer({world, movementSensitivity=5}:VoxelPlacerPr
     return null;
   }
 
-  const { camera, gl: { domElement: canvas } } = useThree();
+  const { camera, gl } = useThree();
+
+  // not just destructuring purely for ease of debugging
+  const canvas = gl.domElement;
 
   const mouseRef = useRef({
     x: 0, y: 0, moveX: 0, moveY: 0,
