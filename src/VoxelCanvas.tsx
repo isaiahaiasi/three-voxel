@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import VoxelWorldRenderer from "./VoxelWorldRenderer";
 import { useContext } from "react";
 import ActiveVoxelContext from "./contexts/ActiveVoxelContext";
+import { Stats } from "@react-three/drei";
 
 export default function VoxelCanvas() {
   const selectedVoxelRef = useContext(ActiveVoxelContext);
@@ -24,5 +25,7 @@ export default function VoxelCanvas() {
     <primitive object={new THREE.AxesHelper(10)}/>
 
     <VoxelWorldRenderer selectedVoxelRef={selectedVoxelRef}/>
+
+    <Stats/>
   </Canvas>
 }

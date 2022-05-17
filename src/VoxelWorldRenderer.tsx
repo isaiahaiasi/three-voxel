@@ -13,7 +13,7 @@ interface VoxelWorldProps {
 }
 
 export default function VoxelWorldRenderer({
-  chunkSize = 64,
+  chunkSize = 32,
   tileDimensions = {
     size: 16,
     textureWidth: 256,
