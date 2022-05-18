@@ -173,16 +173,25 @@ export default class VoxelWorld {
 
   private generateDefaultWorldData() {
     const { chunkSize } = this;
+    let count = 0;
     deepLoop(
       getRangesFromMax(...[chunkSize, chunkSize, chunkSize]),
       (y, z, x) => {
-        const height = (Math.sin(x / chunkSize * Math.PI * 2) + Math.sin(z / chunkSize * Math.PI * 3)) * (chunkSize / 6) + (chunkSize / 2);
+        const curveCenter = chunkSize / 2;
+        const amplitude = chunkSize / 6;
+        const xFreq = 2;
+        const zFreq = 3;
+        const xCurve = Math.sin(x / chunkSize * Math.PI * xFreq);
+        const zCurve = Math.sin(z / chunkSize * Math.PI * zFreq);
+        const height = (xCurve + zCurve) * amplitude + curveCenter;
         if (y < height) {
-          const voxelId = randInt(0, 17);
-          // const voxelId = 4;
+          const voxelId = randInt(1, 17);
           this.setVoxel(x, y, z, voxelId);
         }
+        count++;
+
     });
+    console.log(count);
   }
 
   // gets chunk x, y, z indices from Voxel position

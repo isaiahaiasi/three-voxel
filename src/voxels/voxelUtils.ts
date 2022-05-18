@@ -17,3 +17,13 @@ export function loadTexture(path: string, onLoad?: any) {
   texture.minFilter = THREE.NearestFilter;
   return texture;
 }
+
+export function getVoxelMaterial(path: string) {
+  const texture = loadTexture(path);
+  return new THREE.MeshLambertMaterial({
+    map: texture,
+    side: THREE.DoubleSide,
+    alphaTest: 0.1,
+    transparent: true,
+  });
+}

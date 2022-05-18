@@ -22,7 +22,7 @@ export default function VoxelWorldRenderer({
   selectedVoxelRef,
 }: VoxelWorldProps) {
 
-  const [world] = useState(new VoxelWorld({ chunkSize, tileDimensions}));
+  const [world] = useState(new VoxelWorld({ chunkSize, tileDimensions }));
   const [meshes, setMeshes] = useState<Mesh[]>(world.getMeshes());
 
   useEffect(() => {
@@ -32,9 +32,6 @@ export default function VoxelWorldRenderer({
     world.init();
   }, []);
 
-  // return:
-  //   get the meshes from world
-  //     render the material as a child of each
   return (
       <ActiveVoxelContext.Provider value={selectedVoxelRef}>
       <VoxelPlacer world={world}/>
